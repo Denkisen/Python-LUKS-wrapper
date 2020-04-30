@@ -97,7 +97,6 @@ def open_luks():
       raid_files += "/dev/mapper/" + raid_storage_name + " "
       open_mapper(raid_path_to_storage, raid_storage_name)
 
-    print("mdadm --assemble /dev/md/%s %s" % (storage_name, raid_files))
     os.system("mdadm --assemble /dev/md/%s %s" % (storage_name, raid_files))
     os.system("mkdir -p /run/media/%s/%s" % (os.getlogin(), storage_name))
     os.system("mount -o rw,user /dev/md/%s /run/media/%s/%s" % (storage_name, os.getlogin(), storage_name))
