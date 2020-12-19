@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python
 
 import os
 import sys
@@ -27,7 +27,8 @@ def open_mapper(path, name):
 
 def close_mapper(name):
   if os.path.exists("/dev/mapper/%s" % name):
-    os.system("cryptsetup close %s" % name)
+    return os.system("cryptsetup close %s" % name)
+  return 0
 
 def create_luks():
   if len(sys.argv) != 6:
@@ -110,18 +111,26 @@ def close_luks():
   storage_name = str(sys.argv[2])
 
   if os.path.exists("/run/media/%s/%s" % (os.getlogin(), storage_name)):
-    os.system("umount -d -q /run/media/%s/%s" % (os.getlogin(), storage_name))
+    
+
+    ret = os.system("umount -d -q /run/media/%s/%s" % (os.getlogin(), storage_name))
+    if ret != 0:
+      return
     os.system("rm -rf /run/media/%s/%s" % (os.getlogin(), storage_name))
 
   if os.path.exists("/dev/md/%s" % storage_name):
     os.system("mdadm --stop --verbose /dev/md/%s" % storage_name)
 
   if os.path.exists("/dev/mapper/%s" % storage_name):
-    close_mapper(storage_name)
+    ret = close_mapper(storage_name)
+    if ret != 0:
+      return
   else:
     i = 0
     while os.path.exists("/dev/mapper/%s%d" % (storage_name, i)):
-      close_mapper("%s%d" % (storage_name, i))
+      ret = close_mapper("%s%d" % (storage_name, i))
+      if ret != 0:
+        return
       i += 1
   
 op_commands = {
